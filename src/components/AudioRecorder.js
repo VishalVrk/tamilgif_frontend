@@ -24,7 +24,7 @@ const AudioRecorder = () => {
   const [audioURL, setAudioURL] = useState('');
   const [audioBlob, setAudioBlob] = useState(null);
   const [transcription, setTranscription] = useState('');
-  // const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [loading, setLoading] = useState(false); 
   const [recordings, setRecordings] = useState([]);
   const audioContextRef = useRef(null);
@@ -77,6 +77,7 @@ const AudioRecorder = () => {
     }
     try {
       setLoading(true);
+      setIsAnalyzing(true)
       const downloadURL = url
       const response = await axios.post('https://speechtotextapi.onrender.com/speech-to-text', { url: downloadURL });
       // console.log(response)
@@ -86,6 +87,7 @@ const AudioRecorder = () => {
       setTranscription('Error during transcription. Please try again.');
     }finally{
       setLoading(false);
+      setIsAnalyzing(false)
     }
   };
 
@@ -254,8 +256,9 @@ const AudioRecorder = () => {
                   analyzeAudio(recording.url);
                 }}
                 className="bg-blue-500 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-600 transition duration-200"
+                disabled={isAnalyzing}
               >
-                Analyze
+                {isAnalyzing ? 'Analyzing':'Analyse'}
               </button>
             </div>
           </div>
