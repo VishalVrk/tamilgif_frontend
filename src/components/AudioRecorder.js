@@ -1,10 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { initializeApp } from 'firebase/app';
-import { getStorage, ref, uploadBytes, getDownloadURL, listAll,deleteObject } from 'firebase/storage';
+import { getStorage, ref, uploadBytes, getDownloadURL, listAll, deleteObject } from 'firebase/storage';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import TamilVisualOutput from './TamilVisualOutput';
+import { 
+  Mic, Square, Upload, Trash2, PlayCircle, 
+  Brain, AudioWaveform, Loader2, Volume2
+} from 'lucide-react';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBcqkntjTMpiGkh4lGt_3B-AnVvW4cst5c",
@@ -79,7 +83,7 @@ const AudioRecorder = () => {
       setLoading(true);
       setIsAnalyzing(true)
       const downloadURL = url
-      const response = await axios.post('https://speechtotextapi.onrender.com/speech-to-text', { url: downloadURL });
+      const response = await axios.post('https://speechtotextapi-1.onrender.com/speech-to-text', { url: downloadURL });
       // console.log(response)
       setTranscription(response.data.transcription[0]);
     } catch (error) {
@@ -192,77 +196,131 @@ const AudioRecorder = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-       <ToastContainer autoClose={3000} />
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">ENHANCING COMMUNICATION FOR HEARING IMAPAIRED</h1>
-      <div className="mb-6">
-        {isRecording ? (
-          <button
-            onClick={stopRecording}
-            className="bg-red-500 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-red-600 transition duration-200"
-          >
-            Stop Recording
-          </button>
-        ) : (
-          <button
-            onClick={startRecording}
-            className="bg-green-500 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-green-600 transition duration-200"
-          >
-            Start Recording
-          </button>
-        )}
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+      <ToastContainer autoClose={3000} />
+      
+      {/* Header Section */}
+      <div className="bg-white shadow-md py-6 mb-8">
+        <div className="container mx-auto px-4">
+          <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Enhancing Communication for Hearing Impaired
+          </h1>
+        </div>
       </div>
-      {audioURL && (
-        <div className="w-full max-w-md">
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">Recorded Audio:</h3>
-          <audio src={audioURL} controls className="w-full mb-2" />
-          <button
-            onClick={uploadToFirebase}
-            className="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-blue-600 transition duration-200"
-          >
-            Upload Audio
-          </button>
-        </div>
-      )}
-        {loading && ( // Display loader while loading
-        <div className="mt-4">
-          <div className="loader">Loading...</div>
-          {/* You can replace the above with a spinner or any other loading indicator */}
-        </div>
-      )}
-      {transcription && (
-        <div className="mt-6 w-full max-w-md">
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">Transcription:</h3>
-          <p className="bg-white p-4 rounded-lg shadow-md">{transcription}</p>
-        </div>
-      )}
-      <h2 className="text-2xl font-bold text-gray-800 mt-8 mb-4">Previous Recordings:</h2>
-      <div className="w-full max-w-md">
-        {recordings.map((recording) => (
-          <div key={recording.id} className="flex items-center justify-between mb-4 bg-white p-4 rounded-lg shadow-md">
-            <audio src={recording.url} controls className="mr-4" />
-            <div className="flex space-x-2">
-            <button
-  onClick={() => removeRecording(recording.url)}
-  className="bg-red-500 text-white font-bold py-1 px-3 rounded-lg hover:bg-red-600 transition duration-200"
->
-  Remove
-</button>
 
+      {/* Main Content */}
+      <div className="container mx-auto px-4 max-w-5xl">
+        {/* Recording Controls */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <div className="flex flex-col items-center">
+            <div className="relative mb-6">
+              {isRecording ? (
+                <div className="animate-pulse">
+                  <AudioWaveform className="w-16 h-16 text-red-500" />
+                </div>
+              ) : (
+                <Mic className="w-16 h-16 text-gray-400" />
+              )}
+            </div>
+            
+            {isRecording ? (
               <button
-                onClick={() => {
-                  // Trigger analysis for this specific recording
-                  // You might need to adjust this according to your API structure
-                  analyzeAudio(recording.url);
-                }}
-                className="bg-blue-500 text-white font-bold py-1 px-3 rounded-lg hover:bg-blue-600 transition duration-200"
-                disabled={isAnalyzing}
+                onClick={stopRecording}
+                className="flex items-center gap-2 bg-red-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-red-600 transition duration-300 transform hover:scale-105"
               >
-                {isAnalyzing ? 'Analyzing':'Analyse'}
+                <Square className="w-5 h-5" />
+                Stop Recording
               </button>
+            ) : (
+              <button
+                onClick={startRecording}
+                className="flex items-center gap-2 bg-blue-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg hover:bg-blue-600 transition duration-300 transform hover:scale-105"
+              >
+                <Mic className="w-5 h-5" />
+                Start Recording
+              </button>
+            )}
+          </div>
+
+          {/* Current Recording Playback */}
+          {audioURL && (
+            <div className="mt-8 p-6 bg-gray-50 rounded-xl">
+              <h3 className="text-xl font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                <Volume2 className="w-5 h-5" />
+                Current Recording
+              </h3>
+              <div className="flex flex-col md:flex-row items-center gap-4">
+                <audio src={audioURL} controls className="w-full md:w-2/3 rounded-lg" />
+                <button
+                  onClick={uploadToFirebase}
+                  className="flex items-center gap-2 bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition duration-300"
+                >
+                  <Upload className="w-5 h-5" />
+                  Save Recording
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center my-8">
+            <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+          </div>
+        )}
+
+        {/* Transcription Results */}
+        {transcription && (
+          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+            <div className="space-y-6">
+              <div className="p-6 bg-gray-50 rounded-xl">
+                <h3 className="text-xl font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                  <Brain className="w-5 h-5" />
+                  Text Transcription
+                </h3>
+                <p className="text-lg text-gray-800 leading-relaxed">{transcription}</p>
+              </div>
+              <TamilVisualOutput text={transcription} />
             </div>
           </div>
-        ))}
+        )}
+
+        {/* Previous Recordings */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <PlayCircle className="w-6 h-6" />
+            Previous Recordings
+          </h2>
+          
+          <div className="space-y-4">
+            {recordings.map((recording) => (
+              <div key={recording.id} 
+                   className="flex flex-col md:flex-row items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-300">
+                <div className="w-full md:w-2/3">
+                  <audio src={recording.url} controls className="w-full rounded-lg" />
+                </div>
+                <div className="flex gap-2 w-full md:w-auto justify-center">
+                  <button
+                    onClick={() => removeRecording(recording.url)}
+                    className="flex items-center gap-2 bg-red-100 text-red-600 font-semibold py-2 px-4 rounded-lg hover:bg-red-200 transition duration-300"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Remove
+                  </button>
+                  <button
+                    onClick={() => analyzeAudio(recording.url)}
+                    className="flex items-center gap-2 bg-blue-100 text-blue-600 font-semibold py-2 px-4 rounded-lg hover:bg-blue-200 transition duration-300"
+                    disabled={isAnalyzing}
+                  >
+                    <Brain className="w-4 h-4" />
+                    {isAnalyzing ? 'Analyzing...' : 'Analyze'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
